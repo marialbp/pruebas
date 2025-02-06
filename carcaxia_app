@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
 
-// --- LOGO ---
-const Logo = () => (
-  <svg viewBox="0 0 500 500" style={{ width: '100%', height: '100%' }}>
-    <circle cx="250" cy="250" r="240" fill="black" />
-    <path d="M250 120 C300 120, 350 170, 350 220 C350 270, 300 320, 250 320" fill="none" stroke="white" strokeWidth="20" />
-    <path d="M180 220 C180 170, 230 120, 280 120 C330 120, 380 170, 380 220" fill="none" stroke="white" strokeWidth="20" />
-    <path d="M320 320 C270 320, 220 270, 220 220 C220 170, 270 120, 320 120" fill="none" stroke="white" strokeWidth="20" />
-  </svg>
-);
+/**
+ * Código revertido sin uso de logo ni dependencia de estilos externos.
+ * Conservamos la lógica, pero eliminamos referencias al componente Logo
+ * y todo lo relacionado con Tailwind.
+ *
+ * Cambiamos el título "V Foliada Carcaxía" para ser un encabezado destacado.
+ *
+ * Test Cases:
+ * 1. Verificar que se puede renderizar sin errores y sin un logo.
+ * 2. Comprobar que el título se ve grande y visible.
+ * 3. Asegurar que las funcionalidades de Usuario/Admin se mantienen.
+ * 4. Inscribirse/Cancelar.
+ * 5. Modo Admin: Editar/Gardar/X.
+ */
 
-// --- BLOQUES DE INSCRICIÓN ---
+// BLOQUES DE INSCRICIÓN
 const BLOCKS = [
   { name: 'Foliadiña', start: 1, end: 8 },
-  // Este bloque non pintará filas porque end < start:
-  { name: 'Obradoiro de Baile', start: 9, end: 8 },
+  { name: 'Obradoiro de Baile', start: 9, end: 8 }, // end < start => no filas
   { name: 'Foliada', start: 9, end: 16 },
   { name: 'Grupo Sorpresa', start: 17, end: 32 }
 ];
@@ -31,7 +35,6 @@ function App() {
   const [loginError, setLoginError] = useState('');
 
   // Táboa de rexistros
-  // Engadimos 'editing' para que o admin poida editar.
   const [registrations, setRegistrations] = useState(
     Array(32).fill(null).map(() => ({
       nomeGrupo: '',
@@ -45,7 +48,7 @@ function App() {
   // Notificacións
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
-  // --- FUNCIONS DE NOTIFICACIÓN ---
+  // MOSTRAR NOTIFICACIÓN
   const showNotification = (message, type) => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
@@ -53,9 +56,8 @@ function App() {
     }, 3000);
   };
 
-  // --- FUNCIONS DE AUTENTICACIÓN ---
+  // AUTENTICACIÓN
   const handleLogin = () => {
-    // Validación simple de credenciais
     if (loginForm.username === 'Carcaxía' && loginForm.password === 'Carcaxia2003*') {
       setIsAdmin(true);
       setShowLoginDialog(false);
@@ -72,19 +74,18 @@ function App() {
     showNotification('Sesión pechada correctamente', 'success');
   };
 
-  // --- FUNCIONS DA TÁBOA ---
-
-  // Manipulación de inputs (Nome, Asociación, Integrantes)
+  // MANEJO DE INPUTS
   const handleInputChange = (index, field, value) => {
-    // Se non es admin e esa posición xa está rexistrada, non permitimos editar (lógica de usuario)
+    // Si no eres admin y ese slot ya está inscrito, no permitimos editar
     if (!isAdmin && registrations[index].registered) return;
 
-    setRegistrations((prev) => {
+    setRegistrations(prev => {
       const newRegistrations = [...prev];
       if (field === 'integrantes') {
-        // Só díxitos, e impide 0
         value = value.replace(/\D/g, '');
-        if (value === '' || parseInt(value) <= 0) value = '';
+        if (value === '' || parseInt(value) <= 0) {
+          value = '';
+        }
       }
       newRegistrations[index] = {
         ...newRegistrations[index],
@@ -94,7 +95,7 @@ function App() {
     });
   };
 
-  // Comproba se todos os campos están cubertos antes de inscribirse (usuario normal)
+  // COMPROBA SE FALTAN CAMPOS PARA USUARIO
   const isRowComplete = (index) => {
     const row = registrations[index];
     return (
@@ -104,9 +105,8 @@ function App() {
     );
   };
 
-  // Cando o usuario fai clic en "Inscribirse" ou "Cancelar"
+  // INSCRIBIR / CANCELAR (usuario)
   const handleRegisterClick = (index) => {
-    // Se é usuario normal e non completou a fila, aviso
     if (!isAdmin && !isRowComplete(index)) {
       showNotification('Debes cubrir tódolos campos antes de inscribirte', 'error');
       return;
@@ -115,12 +115,11 @@ function App() {
     setShowConfirmDialog(true);
   };
 
-  // Confirma a acción de inscribirse ou cancelar (usuario normal)
   const handleRegister = (index) => {
-    setRegistrations((prev) => {
+    setRegistrations(prev => {
       const newRegistrations = [...prev];
       if (prev[index].registered) {
-        // Se xa estaba rexistrado -> Cancelar
+        // Cancelar
         newRegistrations[index] = {
           ...newRegistrations[index],
           nomeGrupo: '',
@@ -138,44 +137,42 @@ function App() {
       return newRegistrations;
     });
 
-    // Amosamos notificación
     const wasRegistered = registrations[index].registered;
     const message = wasRegistered ? 'Cancelouse a inscrición' : 'Rexistrado correctamente';
     showNotification(message, wasRegistered ? 'error' : 'success');
     setShowConfirmDialog(false);
   };
 
-  // --- NOVAS FUNCIONS DE ADMIN ---
-
-  // Premer "Editar": habilita a edición nesa fila
+  // FUNCIONS DE ADMIN
   const handleAdminEdit = (index) => {
-    setRegistrations((prev) => {
+    setRegistrations(prev => {
       const newRegistrations = [...prev];
       newRegistrations[index].editing = true;
       return newRegistrations;
     });
   };
 
-  // Premer "Gardar": deshabilita a edición e marca a fila como "registered" se hai datos
   const handleAdminSave = (index) => {
-    setRegistrations((prev) => {
+    setRegistrations(prev => {
       const newRegistrations = [...prev];
       newRegistrations[index].editing = false;
-      // Se os campos non están baleiros, marcámolo como rexistrado
       const row = newRegistrations[index];
-      if (row.nomeGrupo.trim() !== '' || row.asociacion.trim() !== '' || row.integrantes !== '') {
+      // Si hay datos, lo marcamos como registered
+      if (
+        row.nomeGrupo.trim() !== '' ||
+        row.asociacion.trim() !== '' ||
+        row.integrantes !== ''
+      ) {
         newRegistrations[index].registered = true;
       } else {
-        // Se non hai datos, non o consideramos rexistrado
         newRegistrations[index].registered = false;
       }
       return newRegistrations;
     });
   };
 
-  // Premer "X": elimina directamente o rexistro
   const handleAdminDelete = (index) => {
-    setRegistrations((prev) => {
+    setRegistrations(prev => {
       const newRegistrations = [...prev];
       newRegistrations[index] = {
         nomeGrupo: '',
@@ -189,54 +186,43 @@ function App() {
     showNotification('Rexistro eliminado', 'success');
   };
 
-  // Renderiza as filas da táboa por bloques
+  // RENDERIZA LA TÁBOA
   const renderTableRows = () => {
-    return BLOCKS.flatMap((block) => {
-      // Fila "cabeceira" de bloque
-      const rows = [
+    return BLOCKS.flatMap(block => {
+      const blockHeader = (
         <tr key={`block-${block.name}`} style={{ backgroundColor: '#e3f2fd', fontWeight: 'bold' }}>
           <td colSpan={5} style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd' }}>
             {block.name}
           </td>
         </tr>
-      ];
+      );
 
-      // Só iteramos se end >= start
+      const rows = [blockHeader];
+
       if (block.end >= block.start) {
         for (let i = block.start - 1; i < block.end; i++) {
           const rowData = registrations[i];
           const isRegisteredAndNotAdmin = !isAdmin && rowData.registered;
 
-          // Determina a cor de fondo segundo o estado
-          let bgColor = '#ffffff';
+          // Determina color de fondo
+          let backgroundColor = '#ffffff';
           if (rowData.registered) {
-            bgColor = isAdmin ? '#e8f5e9' : '#ffebee';
+            backgroundColor = isAdmin ? '#e8f5e9' : '#ffebee';
           }
 
           rows.push(
-            <tr key={`registration-${i}`} style={{ backgroundColor: bgColor }}>
-              {/* Índice / Orde */}
-              <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd' }}>
-                {i + 1}
-              </td>
+            <tr key={`registration-${i}`} style={{ backgroundColor, border: '1px solid #ddd' }}>
+              <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd' }}>{i + 1}</td>
 
-              {/* Celdas de datos */}
               {isAdmin ? (
-                // --- MODO ADMIN ---
                 rowData.editing ? (
-                  // Se está en modo edición, mostramos inputs
                   <>
                     <td style={{ padding: '12px', border: '1px solid #ddd' }}>
                       <input
                         type="text"
                         value={rowData.nomeGrupo}
                         onChange={(e) => handleInputChange(i, 'nomeGrupo', e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '8px',
-                          borderRadius: '4px',
-                          border: '1px solid #ddd'
-                        }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
                         placeholder="Nome do grupo..."
                       />
                     </td>
@@ -245,12 +231,7 @@ function App() {
                         type="text"
                         value={rowData.asociacion}
                         onChange={(e) => handleInputChange(i, 'asociacion', e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '8px',
-                          borderRadius: '4px',
-                          border: '1px solid #ddd'
-                        }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
                         placeholder="Asociación..."
                       />
                     </td>
@@ -259,28 +240,21 @@ function App() {
                         type="number"
                         value={rowData.integrantes}
                         onChange={(e) => handleInputChange(i, 'integrantes', e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '8px',
-                          borderRadius: '4px',
-                          border: '1px solid #ddd'
-                        }}
-                        min="1"
+                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
                         placeholder="Nº..."
                       />
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd' }}>
-                      {/* Accións en modo edición */}
                       <button
                         onClick={() => handleAdminSave(i)}
                         style={{
                           padding: '8px 16px',
-                          borderRadius: '4px',
                           border: 'none',
                           cursor: 'pointer',
                           backgroundColor: '#4CAF50',
                           color: 'white',
-                          marginRight: '8px'
+                          marginRight: '8px',
+                          borderRadius: '4px'
                         }}
                       >
                         Gardar
@@ -303,7 +277,6 @@ function App() {
                     </td>
                   </>
                 ) : (
-                  // Se NON está en modo edición, mostramos a información en modo lectura
                   <>
                     <td style={{ padding: '12px', border: '1px solid #ddd' }}>
                       {rowData.nomeGrupo || <span style={{ color: '#aaa' }}>(Baleiro)</span>}
@@ -315,22 +288,20 @@ function App() {
                       {rowData.integrantes || <span style={{ color: '#aaa' }}>(Baleiro)</span>}
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd' }}>
-                      {/* Botón Editar */}
                       <button
                         onClick={() => handleAdminEdit(i)}
                         style={{
                           padding: '8px 16px',
-                          borderRadius: '4px',
                           border: 'none',
                           cursor: 'pointer',
                           backgroundColor: '#2196F3',
                           color: 'white',
-                          marginRight: '8px'
+                          marginRight: '8px',
+                          borderRadius: '4px'
                         }}
                       >
                         Editar
                       </button>
-                      {/* Se está "registered", amosamos a X para eliminar */}
                       {rowData.registered && (
                         <button
                           onClick={() => handleAdminDelete(i)}
@@ -350,7 +321,7 @@ function App() {
                   </>
                 )
               ) : (
-                // --- MODO USUARIO ---
+                // MODO USUARIO
                 <>
                   <td style={{ padding: '12px', border: '1px solid #ddd' }}>
                     {isRegisteredAndNotAdmin ? (
@@ -364,8 +335,7 @@ function App() {
                           width: '100%',
                           padding: '8px',
                           borderRadius: '4px',
-                          border: '1px solid #ddd',
-                          backgroundColor: isRegisteredAndNotAdmin ? '#f5f5f5' : '#ffffff'
+                          border: '1px solid #ddd'
                         }}
                         disabled={isRegisteredAndNotAdmin}
                         placeholder="Nome do grupo..."
@@ -384,8 +354,7 @@ function App() {
                           width: '100%',
                           padding: '8px',
                           borderRadius: '4px',
-                          border: '1px solid #ddd',
-                          backgroundColor: isRegisteredAndNotAdmin ? '#f5f5f5' : '#ffffff'
+                          border: '1px solid #ddd'
                         }}
                         disabled={isRegisteredAndNotAdmin}
                         placeholder="Asociación..."
@@ -404,8 +373,7 @@ function App() {
                           width: '100%',
                           padding: '8px',
                           borderRadius: '4px',
-                          border: '1px solid #ddd',
-                          backgroundColor: isRegisteredAndNotAdmin ? '#f5f5f5' : '#ffffff'
+                          border: '1px solid #ddd'
                         }}
                         disabled={isRegisteredAndNotAdmin}
                         min="1"
@@ -448,11 +416,12 @@ function App() {
           );
         }
       }
+
       return rows;
     });
   };
 
-  // Definimos unha variable para simplificar a lóxica no diálogo de confirmación do usuario
+  // Determina se a fila seleccionada está rexistrada
   const isRowRegistered =
     selectedRow !== null &&
     registrations[selectedRow] &&
@@ -499,7 +468,25 @@ function App() {
         )}
       </div>
 
-      {/* DIÁLOGO DE LOGIN */}
+      {notification.show && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            padding: '16px',
+            borderRadius: '4px',
+            color: 'white',
+            zIndex: 1000,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            backgroundColor: notification.type === 'success' ? '#4CAF50' : '#f44336'
+          }}
+        >
+          {notification.message}
+        </div>
+      )}
+
+      {/* DIALOGO LOGIN */}
       {showLoginDialog && (
         <div
           style={{
@@ -518,23 +505,15 @@ function App() {
           <div
             style={{
               backgroundColor: 'white',
-              padding: '24px',
+              padding: '20px',
               borderRadius: '8px',
-              maxWidth: '400px',
+              maxWidth: '500px',
               width: '90%'
             }}
           >
-            <h2
-              style={{
-                marginBottom: '20px',
-                textAlign: 'center',
-                fontSize: '1.5em',
-                color: '#333'
-              }}
-            >
+            <h2 style={{ marginBottom: '16px', fontSize: '1.5em', textAlign: 'center', color: '#333' }}>
               Acceso Administrador
             </h2>
-
             {loginError && (
               <div
                 style={{
@@ -557,7 +536,7 @@ function App() {
                 placeholder="Usuario"
                 value={loginForm.username}
                 onChange={(e) => {
-                  setLoginForm((prev) => ({ ...prev, username: e.target.value }));
+                  setLoginForm(prev => ({ ...prev, username: e.target.value }));
                   setLoginError('');
                 }}
                 style={{
@@ -569,14 +548,13 @@ function App() {
                 }}
               />
             </div>
-
             <div style={{ marginBottom: '20px' }}>
               <input
                 type="password"
                 placeholder="Contrasinal"
                 value={loginForm.password}
                 onChange={(e) => {
-                  setLoginForm((prev) => ({ ...prev, password: e.target.value }));
+                  setLoginForm(prev => ({ ...prev, password: e.target.value }));
                   setLoginError('');
                 }}
                 style={{
@@ -624,26 +602,7 @@ function App() {
         </div>
       )}
 
-      {/* NOTIFICACIÓNS */}
-      {notification.show && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            padding: '16px',
-            borderRadius: '4px',
-            backgroundColor: notification.type === 'success' ? '#4CAF50' : '#f44336',
-            color: 'white',
-            zIndex: 1000,
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-          }}
-        >
-          {notification.message}
-        </div>
-      )}
-
-      {/* DIÁLOGO DE CONFIRMACIÓN (INSCRICIÓN / CANCELACIÓN) PARA USUARIO */}
+      {/* DIALOGO CONFIRM (USUARIO) */}
       {showConfirmDialog && !isAdmin && (
         <div
           style={{
@@ -668,7 +627,7 @@ function App() {
               width: '90%'
             }}
           >
-            <h2 style={{ marginBottom: '16px' }}>
+            <h2 style={{ marginBottom: '16px', fontSize: '1.5em' }}>
               {isRowRegistered ? 'Confirmar Cancelación' : 'Confirmar Inscrición'}
             </h2>
             <p style={{ marginBottom: '20px' }}>
@@ -707,25 +666,29 @@ function App() {
         </div>
       )}
 
-      {/* CONTEDOR PRINCIPAL CON LOGO E TÁBOA */}
       <div
         style={{
           backgroundColor: 'white',
           borderRadius: '8px',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          padding: '20px'
         }}
       >
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <div style={{ width: '75.6px', height: '75.6px', margin: '0 auto 20px' }}>
-            <Logo />
-          </div>
-          <h1 style={{ fontSize: '2em', marginBottom: '10px' }}>V Foliada Carcaxía</h1>
-          <div style={{ color: '#666' }}>A.C.D. Carcaxía - Dende 2003</div>
+        <h1
+          style={{
+            fontSize: '2em',
+            marginBottom: '10px',
+            textAlign: 'center'
+          }}
+        >
+          V Foliada Carcaxía
+        </h1>
+        <div style={{ color: '#666', textAlign: 'center', marginBottom: '20px' }}>
+          A.C.D. Carcaxía - Dende 2003
         </div>
 
-        {/* TÁBOA DE INSCRICIÓNS */}
-        <div style={{ overflowX: 'auto', padding: '20px' }}>
+        <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#f5f5f5' }}>
